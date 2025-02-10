@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JUNGLE.GG</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .champion-card {
+            transition: box-shadow 0.3s ease-in-out;
+        }
+        .champion-card:hover {
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        }
+        .champion-image {
+            width: 120px;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+    </style>
+</head>
+<body>
+    <div class="container py-5">
+        <h1 class="text-center mb-4">JUNGLE.GG</h1>
+        
+        <div class="d-flex justify-content-center flex-wrap gap-2 mb-4" id="roleFilters">
+            <button class="btn btn-outline-primary" data-role="전체">전체</button>
+            <button class="btn btn-outline-primary" data-role="전사">전사</button>
+            <button class="btn btn-outline-primary" data-role="탱커">탱커</button>
+            <button class="btn btn-outline-primary" data-role="마법사">마법사</button>
+            <button class="btn btn-outline-primary" data-role="암살자">암살자</button>
+            <button class="btn btn-outline-primary" data-role="원거리">원거리</button>
+            <button class="btn btn-outline-primary" data-role="서포터">서포터</button>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-md-8 mx-auto">
+                <div class="input-group">
+                    <input type="text" id="searchInput" class="form-control" placeholder="챔피언 검색...">
+                    <select id="sortSelect" class="form-select">
+                        <option value="name">이름순</option>
+                        <option value="role">역할순</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div id="championList" class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-5 row-cols-xl-6 g-4">
+            <!-- 챔피언 카드들이 여기에 동적으로 추가됩니다 -->
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const champions = [
+            { id: 'Aatrox', name: '아트록스', role: '전사', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Aatrox.png' },
+            { id: 'Ahri', name: '아리', role: '마법사', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Ahri.png' },
+            { id: 'Akali', name: '아칼리', role: '암살자', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Akali.png' },
+            { id: 'Akshan', name: '아크샨', role: '원거리', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Akshan.png' },
+            { id: 'Alistar', name: '알리스타', role: '탱커', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Alistar.png' },
+            { id: 'Amumu', name: '아무무', role: '탱커', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Amumu.png' },
+            { id: 'Anivia', name: '애니비아', role: '마법사', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Anivia.png' },
+            { id: 'Annie', name: '애니', role: '마법사', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Annie.png' },
+            { id: 'Aphelios', name: '아펠리오스', role: '원거리', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Aphelios.png' },
+            { id: 'Ashe', name: '애쉬', role: '원거리', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Ashe.png' },
+            { id: 'AurelionSol', name: '아우렐리온 솔', role: '마법사', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/AurelionSol.png' },
+            { id: 'Azir', name: '아지르', role: '마법사', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Azir.png' },
+            { id: 'Bard', name: '바드', role: '서포터', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Bard.png' },
+            { id: 'Belveth', name: '벨베스', role: '전사', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Belveth.png' },
+            { id: 'Blitzcrank', name: '블리츠크랭크', role: '탱커', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Blitzcrank.png' },
+            { id: 'Brand', name: '브랜드', role: '마법사', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Brand.png' },
+            { id: 'Braum', name: '브라움', role: '서포터', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Braum.png' },
+            { id: 'Caitlyn', name: '케이틀린', role: '원거리', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Caitlyn.png' },
+            { id: 'Camille', name: '카밀', role: '전사', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Camille.png' },
+            { id: 'Cassiopeia', name: '카시오페아', role: '마법사', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Cassiopeia.png' },
+            { id: 'Chogath', name: '초가스', role: '탱커', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Chogath.png' },
+            { id: 'Corki', name: '코르키', role: '원거리', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Corki.png' },
+            { id: 'Darius', name: '다리우스', role: '전사', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Darius.png' },
+            { id: 'Diana', name: '다이애나', role: '전사', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Diana.png' },
+            { id: 'Draven', name: '드레이븐', role: '원거리', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Draven.png' },
+            { id: 'DrMundo', name: '문도 박사', role: '전사', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/DrMundo.png' },
+            { id: 'Ekko', name: '에코', role: '암살자', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Ekko.png' },
+            { id: 'Elise', name: '엘리스', role: '마법사', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Elise.png' },
+            { id: 'Evelynn', name: '이블린', role: '암살자', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Evelynn.png' },
+            { id: 'Ezreal', name: '이즈리얼', role: '원거리', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Ezreal.png' },
+            { id: 'Fiddlesticks', name: '피들스틱', role: '마법사', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Fiddlesticks.png' },
+            { id: 'Fiora', name: '피오라', role: '전사', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Fiora.png' },
+            { id: 'Fizz', name: '피즈', role: '암살자', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Fizz.png' },
+            { id: 'Galio', name: '갈리오', role: '탱커', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Galio.png' },
+            { id: 'Gangplank', name: '갱플랭크', role: '전사', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Gangplank.png' },
+            { id: 'Garen', name: '가렌', role: '전사', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Garen.png' },
+            { id: 'Gnar', name: '나르', role: '전사', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Gnar.png' },
+            { id: 'Gragas', name: '그라가스', role: '전사', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Gragas.png' },
+            { id: 'Graves', name: '그레이브즈', role: '원거리', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Graves.png' },
+            { id: 'Gwen', name: '그웬', role: '전사', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Gwen.png' },
+            { id: 'Hecarim', name: '헤카림', role: '전사', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Hecarim.png' },
+            { id: 'Heimerdinger', name: '하이머딩거', role: '마법사', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Heimerdinger.png' },
+            { id: 'Illaoi', name: '일라오이', role: '전사', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Illaoi.png' },
+            { id: 'Irelia', name: '이렐리아', role: '전사', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Irelia.png' },
+            { id: 'Ivern', name: '아이번', role: '서포터', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Ivern.png' },
+            { id: 'Janna', name: '잔나', role: '서포터', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Janna.png' },
+            { id: 'JarvanIV', name: '자르반 4세', role: '탱커', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/JarvanIV.png' },
+            { id: 'Jax', name: '잭스', role: '전사', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Jax.png' },
+            { id: 'Jayce', name: '제이스', role: '전사', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Jayce.png' },
+            { id: 'Jhin', name: '진', role: '원거리', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Jhin.png' },
+            { id: 'Jinx', name: '징크스', role: '원거리', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Jinx.png' },
+            { id: 'Kaisa', name: '카이사', role: '원거리', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Kaisa.png' },
+            { id: 'Kalista', name: '칼리스타', role: '원거리', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Kalista.png' },
+            { id: 'Karma', name: '카르마', role: '마법사', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Karma.png' },
+            { id: 'Karthus', name: '카서스', role: '마법사', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Karthus.png' },
+            { id: 'Kassadin', name: '카사딘', role: '암살자', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Kassadin.png' },
+            { id: 'Katarina', name: '카타리나', role: '암살자', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Katarina.png' },
+            { id: 'Kayle', name: '케일', role: '전사', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Kayle.png' },
+            { id: 'Kayn', name: '케인', role: '전사', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Kayn.png' },
+            { id: 'Kennen', name: '케넨', role: '마법사', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Kennen.png' },
+            { id: 'Khazix', name: '카직스', role: '암살자', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Khazix.png' },
+            { id: 'Kindred', name: '킨드레드', role: '원거리', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Kindred.png' },
+            { id: 'Kled', name: '클레드', role: '전사', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Kled.png' },
+            { id: 'KogMaw', name: '코그모', role: '원거리', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/KogMaw.png' },
+            { id: 'KSante', name: '크산테', role: '탱커', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/KSante.png' },
+            { id: 'Leblanc', name: '르블랑', role: '암살자', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Leblanc.png' },
+            { id: 'LeeSin', name: '리 신', role: '전사', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/LeeSin.png' },
+            { id: 'Leona', name: '레오나', role: '탱커', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Leona.png' },
+            { id: 'Lillia', name: '릴리아', role: '전사', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Lillia.png' },
+            { id: 'Lissandra', name: '리산드라', role: '마법사', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Lissandra.png' },
+            { id: 'Lucian', name: '루시안', role: '원거리', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Lucian.png' },
+            { id: 'Lulu', name: '룰루', role: '서포터', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Lulu.png' },
+            { id: 'Lux', name: '럭스', role: '마법사', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Lux.png' },
+            { id: 'Malphite', name: '말파이트', role: '탱커', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Malphite.png' },
+            { id: 'Malzahar', name: '말자하', role: '마법사', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Malzahar.png' },
+            { id: 'Maokai', name: '마오카이', role: '탱커', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Maokai.png' },
+            { id: 'MasterYi', name: '마스터 이', role: '암살자', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/MasterYi.png' },
+            { id: 'Milio', name: '밀리오', role: '서포터', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Milio.png' },
+            { id: 'MissFortune', name: '미스 포츈', role: '원거리', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/MissFortune.png' },
+            { id: 'MonkeyKing', name: '오공', role: '전사', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/MonkeyKing.png' },
+            { id: 'Mordekaiser', name: '모데카이저', role: '전사', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Mordekaiser.png' },
+            { id: 'Morgana', name: '모르가나', role: '마법사', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Morgana.png' },
+            { id: 'Nami', name: '나미', role: '서포터', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Nami.png' },
+            { id: 'Nasus', name: '나서스', role: '전사', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Nasus.png' },
+            { id: 'Nautilus', name: '노틸러스', role: '탱커', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Nautilus.png' },
+            { id: 'Neeko', name: '니코', role: '마법사', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Neeko.png' },
+            { id: 'Nidalee', name: '니달리', role: '암살자', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Nidalee.png' },
+            { id: 'Nilah', name: '닐라', role: '전사', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Nilah.png' },
+            { id: 'Nocturne', name: '녹턴', role: '암살자', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Nocturne.png' },
+            { id: 'Nunu', name: '누누와 윌럼프', role: '탱커', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Nunu.png' },
+            { id: 'Olaf', name: '올라프', role: '전사', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Olaf.png' },
+            { id: 'Orianna', name: '오리아나', role: '마법사', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Orianna.png' },
+            { id: 'Ornn', name: '오른', role: '탱커', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Ornn.png' },
+            { id: 'Pantheon', name: '판테온', role: '전사', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Pantheon.png' },
+            { id: 'Poppy', name: '뽀삐', role: '탱커', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Poppy.png' },
+            { id: 'Pyke', name: '파이크', role: '서포터', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Pyke.png' },
+            { id: 'Qiyana', name: '키아나', role: '암살자', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Qiyana.png' },
+            { id: 'Quinn', name: '퀸', role: '원거리', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Quinn.png' },
+            { id: 'Rakan', name: '라칸', role: '서포터', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Rakan.png' },
+            { id: 'Rammus', name: '람머스', role: '탱커', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Rammus.png' },
+            { id: 'RekSai', name: '렉사이', role: '전사', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/RekSai.png' },
+            { id: 'Rell', name: '렐', role: '탱커', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Rell.png' },
+            { id: 'Renata', name: '레나타 글라스크', role: '서포터', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Renata.png' },
+            { id: 'Renekton', name: '레넥톤', role: '전사', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Renekton.png' },
+            { id: 'Rengar', name: '렝가', role: '암살자', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Rengar.png' },
+            { id: 'Riven', name: '리븐', role: '전사', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Riven.png' },
+            { id: 'Rumble', name: '럼블', role: '전사', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Rumble.png' },
+            { id: 'Ryze', name: '라이즈', role: '마법사', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Ryze.png' },
+            { id: 'Samira', name: '사미라', role: '원거리', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Samira.png' },
+            { id: 'Sejuani', name: '세주아니', role: '탱커', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Sejuani.png' },
+            { id: 'Senna', name: '세나', role: '원거리', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Senna.png' },
+            { id: 'Seraphine', name: '세라핀', role: '마법사', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Seraphine.png' },
+            { id: 'Sett', name: '세트', role: '전사', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Sett.png' },
+            { id: 'Shaco', name: '샤코', role: '암살자', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Shaco.png' },
+            { id: 'Shen', name: '쉔', role: '탱커', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Shen.png' },
+            { id: 'Shyvana', name: '쉬바나', role: '전사', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Shyvana.png' },
+            { id: 'Singed', name: '신지드', role: '탱커', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Singed.png' },
+            { id: 'Sion', name: '사이온', role: '탱커', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Sion.png' },
+            { id: 'Sivir', name: '시비르', role: '원거리', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Sivir.png' },
+            { id: 'Skarner', name: '스카너', role: '전사', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Skarner.png' },
+            { id: 'Sona', name: '소나', role: '서포터', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Sona.png' },
+            { id: 'Soraka', name: '소라카', role: '서포터', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Soraka.png' },
+            { id: 'Swain', name: '스웨인', role: '마법사', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Swain.png' },
+            { id: 'Sylas', name: '사일러스', role: '마법사', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Sylas.png' },
+            { id: 'Syndra', name: '신드라', role: '마법사', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Syndra.png' },
+            { id: 'TahmKench', name: '탐 켄치', role: '서포터', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/TahmKench.png' },
+            { id: 'Taliyah', name: '탈리야', role: '마법사', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Taliyah.png' },
+            { id: 'Talon', name: '탈론', role: '암살자', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Talon.png' },
+            { id: 'Taric', name: '타릭', role: '서포터', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Taric.png' },
+            { id: 'Teemo', name: '티모', role: '원거리', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Teemo.png' },
+            { id: 'Thresh', name: '쓰레쉬', role: '서포터', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Thresh.png' },
+            { id: 'Tristana', name: '트리스타나', role: '원거리', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Tristana.png' },
+            { id: 'Trundle', name: '트런들', role: '전사', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Trundle.png' },
+            { id: 'Tryndamere', name: '트린다미어', role: '전사', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Tryndamere.png' },
+            { id: 'TwistedFate', name: '트위스티드 페이트', role: '마법사', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/TwistedFate.png' },
+            { id: 'Twitch', name: '트위치', role: '원거리', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Twitch.png' },
+            { id: 'Udyr', name: '우디르', role: '전사', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Udyr.png' },
+            { id: 'Urgot', name: '우르곳', role: '전사', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Urgot.png' },
+            { id: 'Varus', name: '바루스', role: '원거리', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Varus.png' },
+            { id: 'Vayne', name: '베인', role: '원거리', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Vayne.png' },
+            { id: 'Veigar', name: '베이가', role: '마법사', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Veigar.png' },
+            { id: 'Velkoz', name: '벨코즈', role: '마법사', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Velkoz.png' },
+            { id: 'Vex', name: '벡스', role: '마법사', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Vex.png' },
+            { id: 'Vi', name: '바이', role: '전사', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Vi.png' },
+            { id: 'Viego', name: '비에고', role: '암살자', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Viego.png' },
+            { id: 'Viktor', name: '빅토르', role: '마법사', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Viktor.png' },
+            { id: 'Vladimir', name: '블라디미르', role: '마법사', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Vladimir.png' },
+            { id: 'Volibear', name: '볼리베어', role: '전사', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Volibear.png' },
+            { id: 'Warwick', name: '워윅', role: '전사', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Warwick.png' },
+            { id: 'Xayah', name: '자야', role: '원거리', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Xayah.png' },
+            { id: 'Xerath', name: '제라스', role: '마법사', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Xerath.png' },
+            { id: 'XinZhao', name: '신 짜오', role: '전사', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/XinZhao.png' },
+            { id: 'Yasuo', name: '야스오', role: '전사', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Yasuo.png' },
+            { id: 'Yone', name: '요네', role: '암살자', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Yone.png' },
+            { id: 'Yorick', name: '요릭', role: '전사', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Yorick.png' },
+            { id: 'Yuumi', name: '유미', role: '서포터', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Yuumi.png' },
+            { id: 'Zac', name: '자크', role: '탱커', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Zac.png' },
+            { id: 'Zed', name: '제드', role: '암살자', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Zed.png' },
+            { id: 'Zeri', name: '제리', role: '원거리', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Zeri.png' },
+            { id: 'Ziggs', name: '직스', role: '마법사', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Ziggs.png' },
+            { id: 'Zilean', name: '질리언', role: '서포터', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Zilean.png' },
+            { id: 'Zoe', name: '조이', role: '마법사', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Zoe.png' },
+            { id: 'Zyra', name: '자이라', role: '마법사', image: 'https://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Zyra.png' }
+        ].sort((a, b) => a.name.localeCompare(b.name, 'ko'));
+
+        function renderChampions(championsToRender) {
+            const championList = $('#championList');
+            championList.empty();
+            championsToRender.forEach(champion => {
+                championList.append(`
+                    <div class="col">
+                        <div class="card champion-card h-100">        
+                            <div class="card-body text-center">
+                                <button>
+                                <img src="${champion.image}" alt="${champion.name}" class="champion-image mb-3">
+                                <h5 class="card-title">${champion.name}</h5>
+                                <p class="card-text text-muted">${champion.role}</p>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `);
+            });
+        }
+
+        function filterAndSortChampions() {
+            const searchTerm = $('#searchInput').val().toLowerCase();
+            const selectedRole = $('#roleFilters .btn-primary').data('role');
+            const sortBy = $('#sortSelect').val();  
+
+            let filteredChampions = champions.filter(champion => 
+                champion.name.toLowerCase().includes(searchTerm) &&
+                (selectedRole === '전체' || champion.role === selectedRole)
+            );
+
+            filteredChampions.sort((a, b) => {
+                if (sortBy === 'name') {
+                    return a.name.localeCompare(b.name, 'ko');
+                } else {
+                    return a.role.localeCompare(b.role, 'ko');
+                }
+            });
+
+            renderChampions(filteredChampions);
+        }
+
+        $(document).ready(function() {
+            renderChampions(champions);
+
+            $('#searchInput').on('input', filterAndSortChampions);
+            $('#sortSelect').on('change', filterAndSortChampions);
+
+            $('#roleFilters').on('click', '.btn', function() {
+                $('#roleFilters .btn').removeClass('btn-primary').addClass('btn-outline-primary');
+                $(this).removeClass('btn-outline-primary').addClass('btn-primary');
+                filterAndSortChampions();
+            });
+        });
+    </script>
+</body>
+</html>

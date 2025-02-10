@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>리그 오브 레전드 챔피언 정보</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <h1>리그 오브 레전드 챔피언 정보</h1>
+    </header>
+
+    <section id="champion-selector">
+        <h2>챔피언 선택</h2>
+        <select id="champion-dropdown" onchange="updateChampionInfo()">
+            <option value="ahri">아리</option>
+            <option value="kaisa">카이사</option>
+            <option value="lissandra">리산드라</option>
+        </select>
+    </section>
+
+    <section id="champion-info">
+        <h2>챔피언 스킬</h2>
+        <div id="champion-image">
+            <!-- 이미지가 동적으로 변경될 예정입니다. -->
+        </div>
+        <div id="skills">
+            <!-- 스킬 정보가 동적으로 추가됩니다. -->
+        </div>
+    </section>
+
+    <section id="runes">
+        <!-- 룬 정보가 동적으로 추가됩니다. -->
+    </section>
+
+    <section id="summoner-spells">
+        <!-- 스펠 정보가 동적으로 추가됩니다. -->
+    </section>
+
+    <section id="items">
+        <!-- 아이템 정보가 동적으로 추가됩니다. -->
+    </section>
+
+    <footer>
+        <p>&copy; 2025 리그 오브 레전드 챔피언 정보</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
